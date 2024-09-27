@@ -88,11 +88,15 @@ export async function runScenario(
       throw new Error("No file URI found for the feature");
     }
 
-    // Extract the directory path from the fileUri
-    const filePath = fileUri.fsPath;
-    const directoryPath = path.resolve(path.dirname(filePath), "..", "..");
+    let directoryPath = "";
 
-    // Extract the relative path from the fileUri
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (workspaceFolders) {
+      for (const folder of workspaceFolders) {
+        directoryPath = folder.uri.path;
+      }
+    }
+
     const relativePath = vscode.workspace.asRelativePath(fileUri);
 
     const fileContent = (
@@ -118,8 +122,11 @@ export async function runScenario(
       }
     });
 
+    // Find the .tmp folder inside the directoryPath
+    const tmpDir = await findTmpFolder(directoryPath);
+
     // Clear the .tmp/json folder
-    const reportDir = path.join(directoryPath, ".tmp/json");
+    const reportDir = path.join(tmpDir ? tmpDir : directoryPath, tmpDir ? "json" : ".tmp/json");
     await clearReportFolder(reportDir);
 
     const wdioConfigFile = findConfigFile(directoryPath, 'wdio.conf.ts');
@@ -213,12 +220,20 @@ export async function runFeature(
       throw new Error("No file URI found for the feature");
     }
 
-    // Extract the directory path from the fileUri
-    const filePath = fileUri.fsPath;
-    const directoryPath = path.resolve(path.dirname(filePath), "..", "..");
+    let directoryPath = "";
+
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (workspaceFolders) {
+      for (const folder of workspaceFolders) {
+        directoryPath = folder.uri.path;
+      }
+    }
+
+    // Find the .tmp folder inside the directoryPath
+    const tmpDir = await findTmpFolder(directoryPath);
 
     // Clear the .tmp/json folder
-    const reportDir = path.join(directoryPath, ".tmp/json");
+    const reportDir = path.join(tmpDir ? tmpDir : directoryPath, tmpDir ? "json" : ".tmp/json");
     await clearReportFolder(reportDir);
 
     // Extract the relative path from the fileUri
@@ -513,6 +528,23 @@ function findConfigFile(dir: string, fileName: string): string | null {
       } else if (file === fileName) {
           return fullPath;
       }
+  }
+  return null;
+}
+
+async function findTmpFolder(dir: string): Promise<string | null> {
+  const files = await fs.promises.readdir(dir, { withFileTypes: true });
+  for (const file of files) {
+    const fullPath = path.join(dir, file.name);
+    if (file.isDirectory()) {
+      if (file.name === '.tmp') {
+        return fullPath;
+      }
+      const result = await findTmpFolder(fullPath);
+      if (result) {
+        return result;
+      }
+    }
   }
   return null;
 }
