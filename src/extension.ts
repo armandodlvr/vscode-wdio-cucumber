@@ -38,10 +38,16 @@ export function activate(context: vscode.ExtensionContext) {
     "extension.runScenario",
     (document: vscode.TextDocument, line: vscode.TextLine) => {
       // Extract from document the Feature name
-      const featureName = document
-        .getText()
-        .split("\n")[0]
-        .replace("Feature: ", "");
+      const lines = document.getText().split("\n");
+
+      // find the feature name
+      let featureName = "";
+      for (const line of lines) {
+        if (line.startsWith("Feature:")) {
+          featureName = line.replace("Feature: ", "").trim();
+          break;
+        }
+      }
 
       const scenarioName = line.text.trim();
       vscode.window.showInformationMessage(`Running Scenario: ${scenarioName}`);
