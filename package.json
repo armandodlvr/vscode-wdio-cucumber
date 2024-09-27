@@ -3,6 +3,7 @@
   "displayName": "vscode-wdio-cucumber",
   "description": "WebdriverIO + Cucumber test runner for vscode",
   "version": "0.0.1",
+  "publisher": "armandodlvr",
   "license": "MIT",
   "engines": {
     "vscode": "^1.93.0"
