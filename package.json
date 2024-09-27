@@ -1,0 +1,97 @@
+{
+  "name": "vscode-wdio-cucumber",
+  "displayName": "vscode-wdio-cucumber",
+  "description": "WebdriverIO + Cucumber test runner for vscode",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "keywords": [
+    "test",
+    "wdio",
+    "Webdriver.IO"
+  ],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onTestController",
+    "onStartupFinished",
+    "onLanguage:feature",
+    "onTest:cucumberTestProvider"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "WebdriverIO",
+      "properties": {
+        "wdio.headless": {
+          "type": "boolean",
+          "default": true,
+          "description": "Hide browser window during tests"
+        },
+        "wdio.configfile": {
+          "type": "string",
+          "description": "Configuration file glob",
+          "default": "**/wdio.conf.[jt]s"
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "gherkin",
+        "aliases": [
+          "Gherkin",
+          "gherkin"
+        ],
+        "extensions": [
+          ".feature"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "testing": {
+      "testProviders": [
+        {
+          "id": "cucumberTestProvider",
+          "label": "Cucumber"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "extension.runAllTests",
+        "title": "Run All Tests"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@cucumber/gherkin": "^29.0.0",
+    "@cucumber/messages": "^26.0.1",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.93.0",
+    "@typescript-eslint/eslint-plugin": "^8.3.0",
+    "@typescript-eslint/parser": "^8.3.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "esbuild": "^0.23.1",
+    "eslint": "^9.9.1",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.5.4"
+  }
+}
