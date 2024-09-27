@@ -114,7 +114,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(codeLensGherkindisposable);
 
   const codeLensCucumberdisposable = vscode.languages.registerCodeLensProvider(
-    { language: "Cucumber" },
+    { language: "cucumber" },
     new CucumberCodeLensProvider()
   );
 
