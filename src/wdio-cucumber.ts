@@ -1,6 +1,7 @@
 import * as path from "path";
 import * as vscode from "vscode";
-import { promises as fs } from "fs";
+import * as fs from 'fs';
+// import { promises as fs } from "fs";
 import {
   Parser,
   AstBuilder,
@@ -121,14 +122,16 @@ export async function runScenario(
     const reportDir = path.join(directoryPath, ".tmp/json");
     await clearReportFolder(reportDir);
 
-    const command = `npx wdio run wdio.BUILD.conf.ts --spec ${relativePath}:${location}`;
+    const wdioConfigFile = findConfigFile(directoryPath, 'wdio.conf.ts');
+
+    const command = `npx wdio run ${wdioConfigFile} --spec ${relativePath}:${location}`;
     await runWdioCommand(command, directoryPath, run);
 
-    const reportFiles = await fs.readdir(reportDir);
+    const reportFiles = await fs.promises.readdir(reportDir);
 
     for (const reportFile of reportFiles) {
       const reportFilePath = path.join(reportDir, reportFile);
-      const reportContent = await fs.readFile(reportFilePath, "utf8");
+      const reportContent = await fs.promises.readFile(reportFilePath, "utf8");
       const report = JSON.parse(reportContent);
 
       // Update test results based on the report
@@ -221,14 +224,16 @@ export async function runFeature(
     // Extract the relative path from the fileUri
     const relativePath = vscode.workspace.asRelativePath(fileUri);
 
-    const command = `npx wdio run wdio.BUILD.conf.ts --spec ${relativePath}`;
+    const wdioConfigFile = findConfigFile(directoryPath, 'wdio.conf.ts');
+
+    const command = `npx wdio run ${wdioConfigFile} --spec ${relativePath}`;
     await runWdioCommand(command, directoryPath, run);
 
-    const reportFiles = await fs.readdir(reportDir);
+    const reportFiles = await fs.promises.readdir(reportDir);
 
     for (const reportFile of reportFiles) {
       const reportFilePath = path.join(reportDir, reportFile);
-      const reportContent = await fs.readFile(reportFilePath, "utf8");
+      const reportContent = await fs.promises.readFile(reportFilePath, "utf8");
       const report = JSON.parse(reportContent);
 
       // Update test results based on the report
@@ -388,9 +393,9 @@ async function updateTestResults(
 // Function to clear the .tmp/json folder
 async function clearReportFolder(reportDir: string): Promise<void> {
   try {
-    const files = await fs.readdir(reportDir);
+    const files = await fs.promises.readdir(reportDir);
     for (const file of files) {
-      await fs.unlink(path.join(reportDir, file));
+      await fs.promises.unlink(path.join(reportDir, file));
     }
   } catch (error) {
     // Handle error if the directory does not exist
@@ -453,7 +458,7 @@ export async function runAllTests(testController: vscode.TestController) {
 
   // Read all report files in the directory
   const reportDir = path.join(folderPath, ".tmp/json");
-  const reportFiles = await fs.readdir(reportDir);
+  const reportFiles = await fs.promises.readdir(reportDir);
 
   for (const testItem of featuresTestItems) {
     // const interRun = testController.createTestRun(
@@ -462,7 +467,7 @@ export async function runAllTests(testController: vscode.TestController) {
 
     for (const reportFile of reportFiles) {
       const reportFilePath = path.join(reportDir, reportFile);
-      const reportContent = await fs.readFile(reportFilePath, "utf8");
+      const reportContent = await fs.promises.readFile(reportFilePath, "utf8");
       const report = JSON.parse(reportContent);
 
       // Update test results based on the report
@@ -494,4 +499,20 @@ async function runWdioCommand(
       `Error executing WDIO command: ${(error as Error).message}`
     );
   }
+}
+
+function findConfigFile(dir: string, fileName: string): string | null {
+  const files = fs.readdirSync(dir);
+  for (const file of files) {
+      const fullPath = path.join(dir, file);
+      if (fs.statSync(fullPath).isDirectory()) {
+          const result = findConfigFile(fullPath, fileName);
+          if (result) {
+              return result;
+          }
+      } else if (file === fileName) {
+          return fullPath;
+      }
+  }
+  return null;
 }
