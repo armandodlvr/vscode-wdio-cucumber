@@ -21,7 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(testController);
 
   // Find all .feature files in the workspace and parse them
-  vscode.workspace.findFiles("**/*.feature").then((files) => {
+  vscode.workspace.findFiles("**/*.feature", '**​/node_modules/**').then((files) => {
     files.forEach((file) => {
       parseFeatureFile(file, testController);
     });
