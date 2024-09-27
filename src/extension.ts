@@ -21,7 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(testController);
 
   // Find all .feature files in the workspace and parse them
-  vscode.workspace.findFiles("**/*.feature", '**​/node_modules/**').then((files) => {
+  vscode.workspace.findFiles("**/*.feature", 'node_modules/**').then((files) => {
     files.forEach((file) => {
       parseFeatureFile(file, testController);
     });
@@ -106,12 +106,19 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(runFeatureDisposable);
 
   // Register a CodeLens provider for .feature files
-  const codeLensdisposable = vscode.languages.registerCodeLensProvider(
+  const codeLensGherkindisposable = vscode.languages.registerCodeLensProvider(
     { language: "gherkin" },
     new CucumberCodeLensProvider()
   );
 
-  context.subscriptions.push(codeLensdisposable);
+  context.subscriptions.push(codeLensGherkindisposable);
+
+  const codeLensCucumberdisposable = vscode.languages.registerCodeLensProvider(
+    { language: "Cucumber" },
+    new CucumberCodeLensProvider()
+  );
+
+  context.subscriptions.push(codeLensCucumberdisposable);
 
   // Set up the run handler for the test controller
   testController.createRunProfile(
