@@ -14,25 +14,17 @@ import {
 
 let testController: vscode.TestController;
 
-function wdioConfigExists(): boolean {
-  const workspaceFolders = vscode.workspace.workspaceFolders;
-  if (workspaceFolders) {
-    for (const folder of workspaceFolders) {
-      const configPath = path.join(folder.uri.fsPath, "wdio.conf.ts");
-      if (fs.existsSync(configPath)) {
-        return true;
-      }
-    }
-  }
-  return false;
+async function wdioConfigExists(): Promise<boolean> {
+  const configFiles = await vscode.workspace.findFiles("**/wdio.conf.{ts,js}");
+  return configFiles.length > 0;
 }
 
-export function activate(context: vscode.ExtensionContext) {
-    // Check if wdio.conf.ts exists in the main folder
-    if (!wdioConfigExists()) {
-      vscode.window.showWarningMessage("wdio.conf.ts not found in the main folder. WDIO Extension will not run.");
-      return;
-    }
+export async function activate(context: vscode.ExtensionContext) {
+  // Check if wdio.conf.ts or wdio.conf.js exists in any subfolder
+  if (!(await wdioConfigExists())) {
+    vscode.window.showWarningMessage("wdio.conf.ts or wdio.conf.js not found in the workspace. Extension will not run.");
+    return;
+  }
 
   // Create a Test Controller for Cucumber Tests
   testController = vscode.tests.createTestController(
