@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+import * as fs from "fs";
+import * as path from "path";
 
 import {
   parseFeatureFile,
@@ -12,7 +14,26 @@ import {
 
 let testController: vscode.TestController;
 
+function wdioConfigExists(): boolean {
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (workspaceFolders) {
+    for (const folder of workspaceFolders) {
+      const configPath = path.join(folder.uri.fsPath, "wdio.conf.ts");
+      if (fs.existsSync(configPath)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 export function activate(context: vscode.ExtensionContext) {
+    // Check if wdio.conf.ts exists in the main folder
+    if (!wdioConfigExists()) {
+      vscode.window.showWarningMessage("wdio.conf.ts not found in the main folder. WDIO Extension will not run.");
+      return;
+    }
+
   // Create a Test Controller for Cucumber Tests
   testController = vscode.tests.createTestController(
     "cucumberTestController",
