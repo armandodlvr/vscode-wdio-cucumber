@@ -22,7 +22,7 @@ async function wdioConfigExists(): Promise<boolean> {
 export async function activate(context: vscode.ExtensionContext) {
   // Check if wdio.conf.ts or wdio.conf.js exists in any subfolder
   if (!(await wdioConfigExists())) {
-    vscode.window.showWarningMessage("wdio.conf.ts or wdio.conf.js not found in the workspace. Extension will not run.");
+    // vscode.window.showWarningMessage("wdio.conf.ts or wdio.conf.js not found in the workspace. Extension will not run.");
     return;
   }
 
